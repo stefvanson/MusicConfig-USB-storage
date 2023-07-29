@@ -26,12 +26,18 @@ bool UsbDrive::try_to_connect() {
   log_print("UsbDrive: Try to connect to USB Drive...\n");
   usb_host.Task();
 
-  if (usb_file_system) {
-    log_print("UsbDrive: Connected\n");
-    connected = true;
+  if (usb_drive) {
+    log_print("UsbDrive: USB Drive detected\n");
+    if (usb_file_system) {
+      log_print("UsbDrive: Filesystem detected\n");
+      connected = true;
+    } else {
+      log_print(
+          "UsbDrive: Loading filesystem failed, please format your USB drive "
+          "properly (with an MBR parition scheme and FAT formatted).\n");
+    }
   } else {
-    log_print("UsbDrive: Connecting failed\n");
-    connected = false;
+    log_print("UsbDrive: No USB Drive detected\n");
   }
   return connected;
 #else
