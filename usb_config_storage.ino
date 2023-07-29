@@ -5,7 +5,7 @@ MusicConfigManager manager;
 MusicConfig config;
 
 static inline char get_next_user_command() {
-  Serial.print("Send a command to load (l) or save (s) a configuration...\n");
+  Serial.print("\nSend a command to load (l) or save (s) a configuration...\n");
   char next_char = '\n';
   while ((Serial.available() == 0) || next_char == '\n') {
     next_char = Serial.read();

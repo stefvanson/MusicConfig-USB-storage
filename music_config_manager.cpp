@@ -1,42 +1,79 @@
 #include "music_config_manager.h"
 
+#include <string.h>
+
 #include "hal.h"
-//#include <USBHost_t36.h>
-#include <utility>
 
-MusicConfigManager::MusicConfigManager() {
+static constexpr char config_filename[] = "config.txt";
 
-}
+static const char FORMAT[] =
+    "synth_notes:   {%d, %d, %d, %d, %d, %d, %d, %d}\n"
+    "bass_notes:    {%d, %d, %d, %d, %d, %d, %d, %d}\n"
+    "drum_notes[0]: {%d, %d, %d, %d, %d, %d, %d, %d}\n"
+    "drum_notes[1]: {%d, %d, %d, %d, %d, %d, %d, %d}\n"
+    "drum_notes[2]: {%d, %d, %d, %d, %d, %d, %d, %d}\n";
 
 bool MusicConfigManager::load(MusicConfig& config) {
- log_print("MusicConfigManager: Loading config...\n");
+  bool successful = false;
+  log_print("MusicConfigManager: Loading config...\n");
   if (usb_drive.try_to_connect()) {
-    char data[1024] = {0};
-    usb_drive.read_file("file1.txt", data, 1024);
-    config.synth_notes[0] = 1;
-    config.synth_notes[1] = 2;
-    config.synth_notes[2] = 3;
-    config.synth_notes[3] = 4;
-    config.synth_notes[4] = 1;
-    config.synth_notes[5] = 2;
-    config.synth_notes[6] = 3;
-    config.synth_notes[7] = 4;
-    config.drum_notes[0][0] = true;
-    config.drum_notes[0][2] = true;
-    config.drum_notes[0][4] = true;
-    config.drum_notes[0][6] = true;
-    return true;
-  } else {
-    return false;
+    char data[USB_DRIVE_MAX_FILE_SIZE] = {0};
+    if (usb_drive.read_file(config_filename, data, USB_DRIVE_MAX_FILE_SIZE)) {
+      successful = parse_config(data, config);
+    } else {
+      log_print("MusicConfigManager: Unable to read config file\n");
+    }
   }
+  return successful;
 }
 
-void MusicConfigManager::save(const MusicConfig& config) {
+bool MusicConfigManager::save(const MusicConfig& config) {
+  bool successful = false;
   log_print("MusicConfigManager: Saving config...\n");
   if (usb_drive.try_to_connect()) {
-    char data[1024];
-    strncpy(data, "hi1234\nblabla\0", 1024);
-    size_t num_chars = strlen(data);
-    usb_drive.write_file("file1.txt", data, num_chars);
+    char data[USB_DRIVE_MAX_FILE_SIZE];
+    snprintf(data, USB_DRIVE_MAX_FILE_SIZE, FORMAT, config.synth_notes[0],
+             config.synth_notes[1], config.synth_notes[2], config.synth_notes[3],
+             config.synth_notes[4], config.synth_notes[5], config.synth_notes[6],
+             config.synth_notes[7], config.bass_notes[0], config.bass_notes[1],
+             config.bass_notes[2], config.bass_notes[3], config.bass_notes[4],
+             config.bass_notes[5], config.bass_notes[6], config.bass_notes[7],
+             config.drum_notes[0][0], config.drum_notes[0][1], config.drum_notes[0][2],
+             config.drum_notes[0][3], config.drum_notes[0][4], config.drum_notes[0][5],
+             config.drum_notes[0][6], config.drum_notes[0][7], config.drum_notes[1][0],
+             config.drum_notes[1][1], config.drum_notes[1][2], config.drum_notes[1][3],
+             config.drum_notes[1][4], config.drum_notes[1][5], config.drum_notes[1][6],
+             config.drum_notes[1][7], config.drum_notes[2][0], config.drum_notes[2][1],
+             config.drum_notes[2][2], config.drum_notes[2][3], config.drum_notes[2][4],
+             config.drum_notes[2][5], config.drum_notes[2][6], config.drum_notes[2][7]);
+    usb_drive.write_file(config_filename, data, strlen(data));
+    successful = true;
   }
+  return successful;
+}
+
+bool MusicConfigManager::parse_config(const char* data, MusicConfig& config) {
+  bool successful = false;
+  int num_results =
+      sscanf(data, FORMAT, &config.synth_notes[0], &config.synth_notes[1],
+             &config.synth_notes[2], &config.synth_notes[3], &config.synth_notes[4],
+             &config.synth_notes[5], &config.synth_notes[6], &config.synth_notes[7],
+             &config.bass_notes[0], &config.bass_notes[1], &config.bass_notes[2],
+             &config.bass_notes[3], &config.bass_notes[4], &config.bass_notes[5],
+             &config.bass_notes[6], &config.bass_notes[7], &config.drum_notes[0][0],
+             &config.drum_notes[0][1], &config.drum_notes[0][2], &config.drum_notes[0][3],
+             &config.drum_notes[0][4], &config.drum_notes[0][5], &config.drum_notes[0][6],
+             &config.drum_notes[0][7], &config.drum_notes[1][0], &config.drum_notes[1][1],
+             &config.drum_notes[1][2], &config.drum_notes[1][3], &config.drum_notes[1][4],
+             &config.drum_notes[1][5], &config.drum_notes[1][6], &config.drum_notes[1][7],
+             &config.drum_notes[2][0], &config.drum_notes[2][1], &config.drum_notes[2][2],
+             &config.drum_notes[2][3], &config.drum_notes[2][4], &config.drum_notes[2][5],
+             &config.drum_notes[2][6], &config.drum_notes[2][7]);
+  log_print("MusicConfigManager::parse_config(): num_results = %i\n", num_results);
+  if (num_results == 40) {
+    successful = true;
+  } else {
+    log_print("MusicConfigManager::parse_config(): Failed, data: >>>%s<<<\n", data);
+  }
+  return successful;
 }

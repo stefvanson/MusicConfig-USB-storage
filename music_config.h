@@ -8,7 +8,7 @@ class MusicConfig {
  public:
   int synth_notes[NUM_STEPS] = {0};
   int bass_notes[NUM_STEPS] = {0};
-  bool drum_notes[NUM_DRUM_TRACKS][NUM_STEPS] = {{0}};
+  int drum_notes[NUM_DRUM_TRACKS][NUM_STEPS] = {{0}};
   void dump();
 };
 

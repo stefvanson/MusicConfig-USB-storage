@@ -7,15 +7,11 @@
 /** @brief Class for loading/saving a MusicConfig from/to a USB drive. */
 class MusicConfigManager {
  public:
-  MusicConfigManager();
   bool load(MusicConfig& config);
-  void save(const MusicConfig& config);
+  bool save(const MusicConfig& config);
 
  private:
-  enum class State {
-    IDLE,
-    SAVING,
-  };
+  bool parse_config(const char* data, MusicConfig& config);
   UsbDrive usb_drive;
 };
 

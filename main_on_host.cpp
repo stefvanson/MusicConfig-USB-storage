@@ -10,6 +10,7 @@ int main() {
   MusicConfig config;
   if (manager.load(config)) {
     config.dump();
+    manager.save(config);
   }
 
   return 0;
